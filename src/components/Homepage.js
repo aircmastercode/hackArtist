@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import AuthModal from './AuthModal';
 import './Homepage.css';
 
 const Homepage = () => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Track cursor position
   useEffect(() => {
@@ -34,7 +36,12 @@ const Homepage = () => {
   const handleIAmArtist = () => {
     console.log('User chose: I am an Artist');
     setIsModalOpen(false);
-    // Future routing logic will go here
+    setShowAuthModal(true);
+  };
+
+  // Handle closing auth modal
+  const handleCloseAuthModal = () => {
+    setShowAuthModal(false);
   };
 
   return (
@@ -62,7 +69,7 @@ const Homepage = () => {
       {isModalOpen && (
         <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2 className="modal-title">Welcome to the Nexus</h2>
+            <h2 className="modal-title">Art-Artists </h2>
             <p className="modal-subtitle">How would you like to begin?</p>
             <div className="modal-buttons">
               <button 
@@ -80,6 +87,11 @@ const Homepage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal onClose={handleCloseAuthModal} />
       )}
     </div>
   );
