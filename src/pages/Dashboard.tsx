@@ -4,8 +4,8 @@ import Layout from '../components/Layout';
 const Dashboard: React.FC = () => {
   return (
     <Layout>
-      <section className="page-transition" style={{ padding: '24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16 }}>
+      <section className="page-transition" style={{ padding: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
           <aside className="glass-panel" style={{ borderRadius: 12, padding: 12, height: 'fit-content' }}>
             <div style={{ padding: 8, color: 'var(--color-text-secondary)' }}>Dashboard</div>
             <div style={{ padding: 8, color: 'var(--color-text-secondary)' }}>My Crafts</div>

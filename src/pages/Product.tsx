@@ -21,8 +21,8 @@ const Product: React.FC = () => {
 
   return (
     <Layout>
-      <section className="page-transition" style={{ padding: '40px 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 28 }}>
+      <section className="page-transition" style={{ padding: '24px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
           <div>
             <Spotlight src={active} alt={base.title} radius={220} dimOpacity={0.45} className="gold-frame" />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginTop: 10 }}>

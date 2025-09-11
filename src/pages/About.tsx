@@ -2,9 +2,9 @@ import React from 'react';
 import Layout from '../components/Layout';
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <section style={{ padding: '40px 0' }}>
+  <section style={{ padding: '24px 0' }}>
     <h2 style={{ marginBottom: 8 }}>{title}</h2>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'center' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, alignItems: 'center' }}>
       <div style={{ color: 'var(--color-text-secondary)' }}>{children}</div>
       <div className="gold-frame" style={{ height: 220 }} />
     </div>

@@ -7,8 +7,8 @@ const heroImg = '/main-image.jpeg';
 const Home: React.FC = () => {
   return (
     <Layout>
-      <section className="page-transition" style={{ minHeight: '80vh', display: 'grid', placeItems: 'center', padding: '60px 24px' }}>
-        <div style={{ maxWidth: 1200, width: '100%', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 28, alignItems: 'center' }}>
+      <section className="page-transition" style={{ minHeight: '80vh', display: 'grid', placeItems: 'center', padding: '40px 16px' }}>
+        <div style={{ maxWidth: 1200, width: '100%', display: 'grid', gridTemplateColumns: '1fr', gap: 20, alignItems: 'center' }}>
           <div>
             <h1 style={{ fontSize: 56, lineHeight: 1.1, marginBottom: 16 }}>Aureum Market</h1>
             <p style={{ color: 'var(--color-text-secondary)', fontSize: 18, marginBottom: 28 }}>
@@ -19,7 +19,9 @@ const Home: React.FC = () => {
               <a href="/signup" className="btn-ghost">Join as an Artist</a>
             </div>
           </div>
-          <Spotlight src={heroImg} alt="Artisan craft montage" radius={220} dimOpacity={0.4} className="gold-frame" />
+          <div style={{ maxWidth: 720, justifySelf: 'center' }}>
+            <Spotlight src={heroImg} alt="Artisan craft montage" radius={220} dimOpacity={0.4} className="gold-frame" />
+          </div>
         </div>
       </section>
 
@@ -38,7 +40,7 @@ const Home: React.FC = () => {
 
       <section style={{ padding: '40px 24px' }}>
         <h2 style={{ marginBottom: 16 }}>Curated Collections</h2>
-        <div className="fade-in-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div className="fade-in-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
           {['Sculptures of the Ancients', 'Woven Dreams', 'Echoes in Metal'].map((title, i) => (
             <div key={i} className="gold-frame" style={{ height: 220, position: 'relative', display: 'grid', placeItems: 'center', background: 'linear-gradient(180deg, rgba(212,175,55,0.12), rgba(255,255,255,0.02))' }}>
               <span style={{ fontFamily: 'var(--font-serif)', fontSize: 22 }}>{title}</span>

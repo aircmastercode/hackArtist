@@ -40,7 +40,7 @@ const Explore: React.FC = () => {
 
   return (
     <Layout>
-      <section className="page-transition" style={{ padding: '40px 24px' }}>
+      <section className="page-transition" style={{ padding: '24px 16px' }}>
         <div
           className="glass-panel"
           style={{
@@ -76,22 +76,26 @@ const Explore: React.FC = () => {
           </div>
         </div>
 
-        <div style={{
-          columnCount: 3,
-          columnGap: 16,
-        }}>
-          {artworks.map((art) => (
-            <a key={art.id} href={`/product/${art.id}`} style={{ breakInside: 'avoid', display: 'block', marginBottom: 16, textDecoration: 'none', color: 'inherit' }}>
-              <div className="gold-frame" style={{ overflow: 'hidden' }}>
-                <img src={art.imageUrl} alt={art.title} style={{ width: '100%', display: 'block' }} />
-              </div>
-              <div style={{ padding: '8px 2px' }}>
-                <div style={{ fontWeight: 600 }}>{art.title}</div>
-                <div style={{ color: 'var(--color-text-secondary)', fontSize: 12 }}>{art.artistName} · ${art.priceUsd.toLocaleString()}</div>
-              </div>
-            </a>
-          ))}
-          <div ref={sentinelRef} />
+        <div style={{ columnGap: 16 }}>
+          <div style={{
+            columnCount: 1,
+            columnGap: 16,
+          }}
+            className="masonry"
+          >
+            {artworks.map((art) => (
+              <a key={art.id} href={`/product/${art.id}`} style={{ breakInside: 'avoid', display: 'block', marginBottom: 16, textDecoration: 'none', color: 'inherit' }}>
+                <div className="gold-frame" style={{ overflow: 'hidden' }}>
+                  <img src={art.imageUrl} alt={art.title} style={{ width: '100%', display: 'block' }} />
+                </div>
+                <div style={{ padding: '8px 2px' }}>
+                  <div style={{ fontWeight: 600 }}>{art.title}</div>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: 12 }}>{art.artistName} · ${art.priceUsd.toLocaleString()}</div>
+                </div>
+              </a>
+            ))}
+            <div ref={sentinelRef} />
+          </div>
         </div>
       </section>
     </Layout>
