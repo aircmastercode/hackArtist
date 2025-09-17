@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import CartDrawer from './CartDrawer';
 
 type LayoutProps = {
@@ -9,8 +10,17 @@ type LayoutProps = {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { items, subtotalUsd } = useCart();
+  const { currentUser, userProfile, logout } = useAuth();
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
   return (
     <div>
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
@@ -24,8 +34,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <NavLink to="/contact" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}>Contact</NavLink>
           </nav>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <NavLink to="/login" className="btn-ghost">Login</NavLink>
-            <NavLink to="/signup" className="btn-primary">Join as an Artist</NavLink>
+            {currentUser ? (
+              <>
+                <span style={{ color: 'var(--color-text-secondary)' }}>
+                  Welcome, {userProfile?.name || currentUser.displayName || 'User'}
+                </span>
+                <NavLink to="/dashboard" className="btn-ghost">Dashboard</NavLink>
+                <button onClick={handleLogout} className="btn-ghost">Logout</button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login" className="btn-ghost">Login</NavLink>
+                <NavLink to="/signup" className="btn-primary">Join as an Artist</NavLink>
+              </>
+            )}
             <button onClick={() => setOpen(true)} className="btn-ghost" style={{ borderColor: 'rgba(212,175,55,0.4)' }}>
               Cart ({itemCount}) · ${subtotalUsd.toFixed(2)}
             </button>
