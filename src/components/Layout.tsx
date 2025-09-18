@@ -3,6 +3,8 @@ import { Link, NavLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import CartDrawer from './CartDrawer';
+import DataSeeder from './DataSeeder';
+import DebugDatabase from './DebugDatabase';
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -59,6 +61,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         © {new Date().getFullYear()} Aureum Market — Where Heritage Meets the Horizon.
       </footer>
       <CartDrawer open={open} onClose={() => setOpen(false)} />
+      <DataSeeder />
+      <DebugDatabase />
     </div>
   );
 };

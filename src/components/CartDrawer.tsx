@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
 type CartDrawerProps = {
@@ -50,7 +51,14 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn-ghost" onClick={clear}>Clear</button>
-            <button className="btn-primary" style={{ flex: 1 }}>Proceed to Checkout</button>
+            <Link
+              to="/checkout"
+              className="btn-primary"
+              style={{ flex: 1, textDecoration: 'none', textAlign: 'center' }}
+              onClick={onClose}
+            >
+              Proceed to Checkout
+            </Link>
           </div>
         </div>
       </aside>
