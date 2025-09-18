@@ -14,19 +14,19 @@ const DebugDatabase: React.FC = () => {
     try {
       console.log('🔍 Checking database...');
 
-      const [productsData, categoriesData, regionsData] = await Promise.all([
+      const [searchResult, categoriesData, regionsData] = await Promise.all([
         productService.search({}),
         categoryService.getAll(),
         regionService.getAll()
       ]);
 
       console.log('📊 Database results:', {
-        products: productsData.length,
+        products: searchResult.products?.length || 0,
         categories: categoriesData.length,
         regions: regionsData.length
       });
 
-      setProducts(productsData);
+      setProducts(searchResult.products || []);
       setCategories(categoriesData);
       setRegions(regionsData);
     } catch (err) {
