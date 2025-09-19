@@ -522,7 +522,7 @@ const Checkout: React.FC = () => {
                     fontSize: '14px',
                     color: 'var(--color-text-secondary)'
                   }}>
-                    <strong>Demo Mode:</strong> This is a demonstration. No real payment will be processed.
+                    <strong>Payment Processing:</strong> Secure payment processing through Razorpay.
                   </div>
                 </div>
 

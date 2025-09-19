@@ -4,14 +4,16 @@ import Spotlight from '../components/Spotlight';
 import { useCart } from '../context/CartContext';
 import type { Artwork } from '../types';
 
+// This component should receive product data as props or from a data source
+// For now, we'll use placeholder data structure
 const base: Artwork = {
-  id: 'sample-1',
-  title: 'Celestial Vessel',
-  imageUrl: '/main-image.jpeg',
-  priceUsd: 1450,
-  artistId: 'artist-1',
-  artistName: 'Ari V.',
-  description: 'Hand-thrown vessel infused with mineral glazes, fired under moonlight.',
+  id: '',
+  title: '',
+  imageUrl: '',
+  priceUsd: 0,
+  artistId: '',
+  artistName: '',
+  description: '',
 };
 
 const Product: React.FC = () => {

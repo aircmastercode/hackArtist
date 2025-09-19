@@ -22,13 +22,11 @@ const Artist: React.FC = () => {
         <section style={{ marginTop: 24 }}>
           <h2>Artworks</h2>
           <div style={{ columnCount: 1, columnGap: 16 }}>
-            {Array.from({ length: 9 }).map((_, i) => (
-              <a key={i} href={`/product/sample-${i}`} style={{ breakInside: 'avoid', display: 'block', marginBottom: 16 }}>
-                <div className="gold-frame" style={{ overflow: 'hidden' }}>
-                  <img src="/main-image.jpeg" alt="art" style={{ width: '100%', display: 'block' }} />
-                </div>
-              </a>
-            ))}
+            {/* This should be populated with actual artist products from the database */}
+            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)' }}>
+              <p>No artworks available yet.</p>
+              <p>This section will display the artist's portfolio when products are added.</p>
+            </div>
           </div>
         </section>
       </section>
