@@ -24,7 +24,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
   const [error, setError] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
-  const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
   const [isEnhancingImages, setIsEnhancingImages] = useState(false);
   const [enhancementResults, setEnhancementResults] = useState<ImageEnhancementResult[]>([]);
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
@@ -472,18 +471,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
       setEnhancementResults([]);
       setUploadedImageUrls([]);
 
-      // Trigger fresh analysis in the background
-      setIsGeneratingAnalysis(true);
-      try {
-        console.log('🚀 Triggering fresh analysis after product addition...');
-        await AnalyticsService.triggerFreshAnalysis(user.id);
-        console.log('✅ Analysis updated successfully');
-      } catch (analysisError) {
-        console.error('⚠️ Failed to update analysis:', analysisError);
-        // Don't show error to user as this is background process
-      } finally {
-        setIsGeneratingAnalysis(false);
-      }
+      // Trigger fresh analysis in the background (non-blocking)
+      console.log('🚀 Triggering fresh analysis in background...');
+      AnalyticsService.triggerFreshAnalysis(user.id)
+        .then(() => {
+          console.log('✅ Analysis updated successfully in background');
+        })
+        .catch((analysisError) => {
+          console.error('⚠️ Failed to update analysis in background:', analysisError);
+          // Don't show error to user as this is background process
+        });
 
       if (onProductAdded) {
         onProductAdded();
@@ -530,16 +527,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
         </div>
       )}
 
-      {isGeneratingAnalysis && (
-        <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-3"></div>
-            <p className="text-blue-400 text-sm">
-              Updating your business analysis with the new product...
-            </p>
-          </div>
-        </div>
-      )}
 
       {isEnhancingImages && (
         <div className="mb-6 p-4 bg-purple-500/20 border border-purple-500/50 rounded-lg">

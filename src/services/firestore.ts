@@ -1,4 +1,4 @@
-import { collection, addDoc, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 // Artist interface
@@ -352,6 +352,19 @@ export class FirestoreService {
     } catch (error) {
       console.error('Error getting product by ID: ', error);
       throw new Error('Failed to retrieve product');
+    }
+  }
+
+  // Delete a product
+  static async deleteProduct(productId: string): Promise<boolean> {
+    try {
+      const docRef = doc(db, this.PRODUCTS_COLLECTION, productId);
+      await deleteDoc(docRef);
+      console.log('Product deleted successfully with ID: ', productId);
+      return true;
+    } catch (error) {
+      console.error('Error deleting product: ', error);
+      throw new Error('Failed to delete product');
     }
   }
 
