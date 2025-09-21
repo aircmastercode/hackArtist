@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { FirestoreService } from '../services/firestore';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const Login: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -23,21 +25,26 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      // TODO: Implement actual authentication logic
-      console.log('Login attempt:', formData);
+      // Authenticate with Firestore
+      const artist = await FirestoreService.authenticateArtist(formData.email, formData.password);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For now, just show success message
-      alert('Login successful! (Demo mode)');
+      if (artist) {
+        console.log('Login successful for artist:', artist.artistName);
+        // TODO: Store user session/token
+        alert(`Welcome back, ${artist.artistName}!`);
+        // TODO: Redirect to dashboard or home page
+      } else {
+        setError('Invalid email or password. Please try again.');
+      }
       
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      console.error('Login error:', err);
+      setError('Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <main className="min-h-screen bg-[#121212] text-white">
@@ -55,6 +62,7 @@ const Login: React.FC = () => {
                 Sign in to your ShilpSetu account
               </p>
             </div>
+
 
             {/* Error Message */}
             {error && (

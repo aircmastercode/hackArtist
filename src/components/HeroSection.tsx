@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
   return (
@@ -23,9 +24,12 @@ const HeroSection: React.FC = () => {
           ShilpSetu is your bridge to the heart of Indian craftsmanship. We empower artisans to tell their stories, share their art, and connect with a global audience.
         </p>
         
-        <button className="bg-gradient-to-r from-orange-500 to-yellow-400 hover:shadow-lg hover:shadow-yellow-500/50 text-black font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105">
+        <Link
+          to="/signup"
+          className="inline-block bg-gradient-to-r from-orange-500 to-yellow-400 hover:shadow-lg hover:shadow-yellow-500/50 text-black font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105"
+        >
           Join as an Artisan
-        </button>
+        </Link>
       </div>
 
       {/* Scroll indicator */}
