@@ -1,32 +1,39 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
+  const location = useLocation();
+  
   return (
     <nav className="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-400">
+            <Link to="/" className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-400">
               ShilpSetu
-            </h1>
+            </Link>
           </div>
 
           {/* Navigation Links */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
-              <a
-                href="/explore"
+              <Link
+                to="/explore"
                 className="text-white hover:text-yellow-400 transition-colors duration-300 px-3 py-2 text-sm font-medium"
               >
                 Explore
-              </a>
-              <a
-                href="/our-story"
-                className="text-white hover:text-yellow-400 transition-colors duration-300 px-3 py-2 text-sm font-medium"
+              </Link>
+              <Link
+                to="/story"
+                className={`transition-colors duration-300 px-3 py-2 text-sm font-medium ${
+                  location.pathname === '/story'
+                    ? 'text-yellow-400'
+                    : 'text-white hover:text-yellow-400'
+                }`}
               >
                 Stories
-              </a>
+              </Link>
             </div>
           </div>
 
