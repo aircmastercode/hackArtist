@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useUser } from '../context/UserContext';
 import { FirestoreService, Product } from '../services/firestore';
 
@@ -9,15 +9,18 @@ interface ProductFormProps {
 
 const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) => {
   const { user } = useUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     productName: '',
     category: '',
-    rawImages: [''],
+    rawImages: [] as string[],
     artisanNotes: '',
     price: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   const categories = [
     'Pottery & Ceramics',
@@ -40,30 +43,92 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
     }));
   };
 
-  const handleImageUrlChange = (index: number, value: string) => {
-    const newImages = [...formData.rawImages];
-    newImages[index] = value;
-    setFormData(prev => ({
-      ...prev,
-      rawImages: newImages
-    }));
+  // Convert file to base64 data URL
+  const fileToDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
-  const addImageField = () => {
-    setFormData(prev => ({
-      ...prev,
-      rawImages: [...prev.rawImages, '']
-    }));
-  };
+  // Handle file selection
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files) return;
 
-  const removeImageField = (index: number) => {
-    if (formData.rawImages.length > 1) {
-      const newImages = formData.rawImages.filter((_, i) => i !== index);
+    setUploadingImages(true);
+    setError('');
+
+    try {
+      const validFiles = Array.from(files).filter(file => {
+        const isValidType = file.type.startsWith('image/');
+        const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
+        
+        if (!isValidType) {
+          setError('Please select only image files (JPG, PNG, GIF, etc.)');
+          return false;
+        }
+        if (!isValidSize) {
+          setError('Image size must be less than 5MB');
+          return false;
+        }
+        return true;
+      });
+
+      if (validFiles.length === 0) return;
+
+      // Convert files to data URLs
+      const dataUrls = await Promise.all(
+        validFiles.map(file => fileToDataURL(file))
+      );
+
       setFormData(prev => ({
         ...prev,
-        rawImages: newImages
+        rawImages: [...prev.rawImages, ...dataUrls]
       }));
+
+    } catch (err) {
+      console.error('Error processing images:', err);
+      setError('Failed to process images. Please try again.');
+    } finally {
+      setUploadingImages(false);
     }
+  };
+
+  // Handle drag and drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    handleFileSelect(e.dataTransfer.files);
+  };
+
+  // Handle file input change
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileSelect(e.target.files);
+  };
+
+  // Remove image
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      rawImages: prev.rawImages.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Open file dialog
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
   };
 
   const validateForm = () => {
@@ -83,9 +148,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
       setError('Artisan notes are required');
       return false;
     }
-    const validImages = formData.rawImages.filter(url => url.trim());
-    if (validImages.length === 0) {
-      setError('At least one image URL is required');
+    if (formData.rawImages.length === 0) {
+      setError('At least one image is required');
       return false;
     }
     return true;
@@ -125,7 +189,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
       setFormData({
         productName: '',
         category: '',
-        rawImages: [''],
+        rawImages: [],
         artisanNotes: '',
         price: ''
       });
@@ -218,38 +282,87 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
           />
         </div>
 
-        {/* Image URLs */}
+        {/* Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Product Images *
           </label>
-          {formData.rawImages.map((url, index) => (
-            <div key={index} className="flex items-center space-x-2 mb-2">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                placeholder="Enter image URL"
-                className="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-400"
-              />
-              {formData.rawImages.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeImageField(index)}
-                  className="px-3 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-300"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addImageField}
-            className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors duration-300"
+          
+          {/* Drag and Drop Area */}
+          <div
+            className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300 ${
+              isDragOver
+                ? 'border-orange-500 bg-orange-500/10'
+                : 'border-gray-600 hover:border-orange-400 hover:bg-gray-700/20'
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
           >
-            + Add another image
-          </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
+            
+            {uploadingImages ? (
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-4"></div>
+                <p className="text-gray-300">Processing images...</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 mb-4 text-gray-400">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-gray-300 mb-2">
+                  Drag and drop images here, or{' '}
+                  <button
+                    type="button"
+                    onClick={openFileDialog}
+                    className="text-orange-400 hover:text-orange-300 font-medium underline"
+                  >
+                    browse files
+                  </button>
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Supports JPG, PNG, GIF up to 5MB each
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Image Preview Grid */}
+          {formData.rawImages.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-300 mb-3">
+                Selected Images ({formData.rawImages.length})
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {formData.rawImages.map((imageUrl, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={imageUrl}
+                      alt={`Product image ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg border border-gray-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center text-sm transition-colors duration-300 opacity-0 group-hover:opacity-100"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Artisan Notes */}
