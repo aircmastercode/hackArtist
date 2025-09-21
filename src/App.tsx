@@ -15,6 +15,7 @@ import SystemTest from './pages/SystemTest';
 import AnalyticsTest from './pages/AnalyticsTest';
 import CachingTest from './pages/CachingTest';
 import PopulateStories from './pages/PopulateStories';
+import GenerateStories from './pages/GenerateStories';
 import DatabaseArtistStory from './components/DatabaseArtistStory';
 import { artists } from './data/artistsData';
 
@@ -35,6 +36,7 @@ const App: React.FC = () => {
           <Route path="/business-analysis" element={<BusinessAnalysis />} />
           <Route path="/community" element={<Dashboard />} />
           <Route path="/populate-stories" element={<PopulateStories />} />
+          <Route path="/generate-stories" element={<GenerateStories />} />
           <Route path="/system-test" element={<SystemTest />} />
           <Route path="/analytics-test" element={<AnalyticsTest />} />
           <Route path="/caching-test" element={<CachingTest />} />

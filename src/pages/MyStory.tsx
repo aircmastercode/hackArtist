@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import DashboardNavbar from '../components/DashboardNavbar';
-import { FirestoreService, ArtistProfile } from '../services/firestore';
+import { FirestoreService, ArtistProfile, ArtistStory } from '../services/firestore';
+import { StoryGenerationService } from '../services/storyGenerationService';
 
 const MyStory: React.FC = () => {
   const { user } = useUser();
   const [artistProfile, setArtistProfile] = useState<ArtistProfile | null>(null);
+  const [artistStory, setArtistStory] = useState<ArtistStory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -20,13 +23,36 @@ const MyStory: React.FC = () => {
     
     try {
       setIsLoading(true);
-      const profile = await FirestoreService.getArtistProfileByArtistId(user.id);
+      const [profile, story] = await Promise.all([
+        FirestoreService.getArtistProfileByArtistId(user.id),
+        FirestoreService.getArtistStoryByArtistId(user.id)
+      ]);
       setArtistProfile(profile);
+      setArtistStory(story);
     } catch (err) {
       console.error('Error loading profile:', err);
       setError('Failed to load your story');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateStory = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setIsGeneratingStory(true);
+      setError('');
+      
+      const story = await StoryGenerationService.generateStoryForArtist(user.id);
+      setArtistStory(story);
+      
+      console.log('✅ Story generated successfully');
+    } catch (err) {
+      console.error('Error generating story:', err);
+      setError('Failed to generate your story. Please try again.');
+    } finally {
+      setIsGeneratingStory(false);
     }
   };
 
@@ -55,7 +81,7 @@ const MyStory: React.FC = () => {
     );
   }
 
-  if (error || !artistProfile) {
+  if (error && !artistStory) {
     return (
       <main className="min-h-screen bg-[#121212] text-white">
         <DashboardNavbar />
@@ -66,28 +92,30 @@ const MyStory: React.FC = () => {
             </div>
             <h1 className="text-3xl font-bold mb-4">Your Story Awaits</h1>
             <p className="text-gray-300 mb-8">
-              {error || "You haven't created your story yet. Complete your profile to share your journey with the world."}
+              {error || "You haven't created your story yet. Generate your personalized story based on your journey and products."}
             </p>
-            <a
-              href="/my-profile"
-              className="bg-gradient-to-r from-orange-500 to-yellow-400 hover:from-orange-600 hover:to-yellow-500 text-black font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105"
+            <button
+              onClick={handleGenerateStory}
+              disabled={isGeneratingStory}
+              className="bg-gradient-to-r from-orange-500 to-yellow-400 hover:from-orange-600 hover:to-yellow-500 disabled:from-gray-600 disabled:to-gray-700 text-black font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
             >
-              Complete Your Profile
-            </a>
+              {isGeneratingStory ? 'Generating Your Story...' : 'Generate My Story'}
+            </button>
           </div>
         </div>
       </main>
     );
   }
 
-  const storyParagraphs = [
+  // Use generated story if available, otherwise fall back to profile story
+  const storyParagraphs = artistStory?.paragraphs || (artistProfile ? [
     artistProfile.story.paragraph1,
     artistProfile.story.paragraph2,
     artistProfile.story.paragraph3,
     artistProfile.story.paragraph4,
     artistProfile.story.paragraph5,
     artistProfile.story.paragraph6
-  ];
+  ] : []);
 
   return (
     <main className="min-h-screen bg-[#121212] text-white">
@@ -97,13 +125,24 @@ const MyStory: React.FC = () => {
       <section className="pt-16 pb-20 bg-gradient-to-br from-orange-900/20 to-yellow-900/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            My Story
+            {artistStory?.title || 'My Story'}
           </h1>
           <p className="text-xl text-gray-300 mb-8">
             The journey of {user.artistName} - {user.state}
           </p>
+          
+          {/* Regenerate Story Button */}
+          <div className="mb-8">
+            <button
+              onClick={handleGenerateStory}
+              disabled={isGeneratingStory}
+              className="bg-gradient-to-r from-blue-500 to-purple-400 hover:from-blue-600 hover:to-purple-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
+            >
+              {isGeneratingStory ? '🔄 Regenerating...' : '✨ Regenerate Story'}
+            </button>
+          </div>
           <div className="flex justify-center space-x-6">
-            {artistProfile.instagramId && (
+            {artistProfile?.instagramId && (
               <a
                 href={`https://instagram.com/${artistProfile.instagramId.replace('@', '')}`}
                 target="_blank"
@@ -113,7 +152,7 @@ const MyStory: React.FC = () => {
                 📸 Instagram
               </a>
             )}
-            {artistProfile.youtubeLink && (
+            {artistProfile?.youtubeLink && (
               <a
                 href={artistProfile.youtubeLink}
                 target="_blank"
@@ -149,7 +188,7 @@ const MyStory: React.FC = () => {
                     </div>
                     
                     {/* Story Image */}
-                    {artistProfile.storyImages[index] && (
+                    {artistProfile?.storyImages?.[index] && (
                       <div className="flex-shrink-0 w-full lg:w-80">
                         <div className="relative overflow-hidden rounded-xl">
                           <img
