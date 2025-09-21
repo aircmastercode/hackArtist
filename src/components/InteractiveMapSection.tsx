@@ -155,7 +155,7 @@ const InteractiveMapSection: React.FC = () => {
       <div className="relative w-full px-4">
         {/* Indian Map Base Image */}
         <img
-          src="/india.png"
+          src="/india.jpeg"
           alt="Map of India"
           className="w-full h-auto opacity-80 mx-auto"
         />

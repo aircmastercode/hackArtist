@@ -67,6 +67,16 @@ const DashboardNavbar: React.FC = () => {
                 My Products
               </Link>
               <Link
+                to="/business-analysis"
+                className={`transition-colors duration-300 px-3 py-2 text-sm font-medium ${
+                  location.pathname === '/business-analysis'
+                    ? 'text-yellow-400'
+                    : 'text-white hover:text-yellow-400'
+                }`}
+              >
+                Business Analytics
+              </Link>
+              <Link
                 to="/community"
                 className={`transition-colors duration-300 px-3 py-2 text-sm font-medium ${
                   location.pathname === '/community'

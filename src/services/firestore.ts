@@ -115,6 +115,31 @@ export class FirestoreService {
     }
   }
 
+  // Get all artists
+  static async getAllArtists(): Promise<Artist[]> {
+    try {
+      const q = query(
+        collection(db, this.USERS_COLLECTION),
+        where('isActive', '==', true)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const artists: Artist[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        artists.push({
+          id: doc.id,
+          ...doc.data()
+        } as Artist);
+      });
+      
+      return artists;
+    } catch (error) {
+      console.error('Error getting all artists: ', error);
+      throw new Error('Failed to retrieve artists');
+    }
+  }
+
   // Check if email already exists
   static async checkEmailExists(email: string): Promise<boolean> {
     try {
