@@ -6,12 +6,14 @@ interface StickyImageSectionProps {
   backgroundUrl: string;
   alt: string;
   textBlocks: TextBlockData[];
+  storyImages?: string[]; // Array of story images to display with text blocks
 }
 
 const StickyImageSection: React.FC<StickyImageSectionProps> = ({
   backgroundUrl,
   alt,
-  textBlocks
+  textBlocks,
+  storyImages = []
 }) => {
   // Calculate height based on number of text blocks
   // Each text block needs space to scroll past the sticky image
@@ -47,6 +49,8 @@ const StickyImageSection: React.FC<StickyImageSectionProps> = ({
               <TextBlock
                 content={textBlock.content}
                 alignment={textBlock.alignment}
+                imageUrl={storyImages[index]}
+                imageAlt={`Story image ${index + 1}`}
               />
             </div>
           ))}

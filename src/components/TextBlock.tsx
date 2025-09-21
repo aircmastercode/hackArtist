@@ -4,9 +4,11 @@ import { useOnScreen } from '../hooks/useOnScreen';
 interface TextBlockProps {
   content: string;
   alignment: 'left' | 'center' | 'right';
+  imageUrl?: string;
+  imageAlt?: string;
 }
 
-const TextBlock: React.FC<TextBlockProps> = ({ content, alignment }) => {
+const TextBlock: React.FC<TextBlockProps> = ({ content, alignment, imageUrl, imageAlt }) => {
   const [ref, isVisible] = useOnScreen({ threshold: 0.2, triggerOnce: true });
 
   const getAlignmentClasses = () => {
@@ -27,7 +29,7 @@ const TextBlock: React.FC<TextBlockProps> = ({ content, alignment }) => {
       ref={ref}
       className={`
         ${getAlignmentClasses()}
-        max-w-prose
+        max-w-4xl
         bg-[#FAFAFA]
         text-gray-800
         p-8
@@ -44,9 +46,29 @@ const TextBlock: React.FC<TextBlockProps> = ({ content, alignment }) => {
         }
       `}
     >
-      <p className="text-lg md:text-xl leading-relaxed font-light">
-        {content}
-      </p>
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        {/* Text Content */}
+        <div className="flex-1">
+          <p className="text-lg md:text-xl leading-relaxed font-light">
+            {content}
+          </p>
+        </div>
+        
+        {/* Image Content */}
+        {imageUrl && (
+          <div className="flex-shrink-0 w-full lg:w-80">
+            <img
+              src={imageUrl}
+              alt={imageAlt || 'Story image'}
+              className="w-full h-64 object-cover rounded-lg shadow-lg"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

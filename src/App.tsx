@@ -8,7 +8,10 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import MyProducts from './pages/MyProducts';
 import MyProfile from './pages/MyProfile';
+import MyStory from './pages/MyStory';
+import PopulateStories from './pages/PopulateStories';
 import IndividualArtistStory from './components/IndividualArtistStory';
+import DatabaseArtistStory from './components/DatabaseArtistStory';
 import { artists } from './data/artistsData';
 
 const App: React.FC = () => {
@@ -23,18 +26,18 @@ const App: React.FC = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-profile" element={<MyProfile />} />
-          <Route path="/my-story" element={<Dashboard />} />
+          <Route path="/my-story" element={<MyStory />} />
           <Route path="/my-products" element={<MyProducts />} />
           <Route path="/community" element={<Dashboard />} />
+          <Route path="/populate-stories" element={<PopulateStories />} />
           {/* Individual Artist Story Routes */}
           {artists.map((artist) => (
             <Route
               key={artist.id}
               path={`/story/${artist.id}`}
               element={
-                <IndividualArtistStory
-                  story={artist.story}
-                  artistName={artist.name}
+                <DatabaseArtistStory
+                  artistId={artist.id}
                 />
               }
             />

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import DashboardNavbar from '../components/DashboardNavbar';
 import ProductForm from '../components/ProductForm';
@@ -37,12 +38,23 @@ const Dashboard: React.FC = () => {
             <p className="text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
               Ready to showcase your beautiful creations to the world? Start by listing your first product and let your art speak for itself.
             </p>
-            <button 
-              onClick={() => setShowProductForm(true)}
-              className="bg-gradient-to-r from-orange-500 to-yellow-400 hover:from-orange-600 hover:to-yellow-500 text-black font-bold py-6 px-12 rounded-full text-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50"
-            >
-              🎨 List New Product
-            </button>
+            
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <button 
+                onClick={() => setShowProductForm(true)}
+                className="bg-gradient-to-r from-orange-500 to-yellow-400 hover:from-orange-600 hover:to-yellow-500 text-black font-bold py-6 px-12 rounded-full text-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-orange-500/50"
+              >
+                🎨 List New Product
+              </button>
+              
+              <Link
+                to="/my-story"
+                className="bg-gray-700/50 hover:bg-gray-600/50 backdrop-blur-md text-white font-bold py-6 px-12 rounded-full text-2xl transition-all duration-300 transform hover:scale-105 border border-white/20 hover:border-orange-500/50"
+              >
+                📖 View My Story
+              </Link>
+            </div>
           </div>
         </section>
       </div>
