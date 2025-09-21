@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { FirestoreService } from '../services/firestore';
+import { useUser } from '../context/UserContext';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const Login: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useUser();
+  const navigate = useNavigate();
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,18 +27,19 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    try {
-      // Authenticate with Firestore
-      const artist = await FirestoreService.authenticateArtist(formData.email, formData.password);
-      
-      if (artist) {
-        console.log('Login successful for artist:', artist.artistName);
-        // TODO: Store user session/token
-        alert(`Welcome back, ${artist.artistName}!`);
-        // TODO: Redirect to dashboard or home page
-      } else {
-        setError('Invalid email or password. Please try again.');
-      }
+            try {
+              // Authenticate with Firestore
+              const artist = await FirestoreService.authenticateArtist(formData.email, formData.password);
+              
+              if (artist) {
+                console.log('Login successful for artist:', artist.artistName);
+                // Store user in context and localStorage
+                login(artist);
+                // Redirect to dashboard
+                navigate('/dashboard');
+              } else {
+                setError('Invalid email or password. Please try again.');
+              }
       
     } catch (err) {
       console.error('Login error:', err);

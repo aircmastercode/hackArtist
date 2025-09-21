@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { FirestoreService } from '../services/firestore';
+import { useUser } from '../context/UserContext';
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,8 @@ const Signup: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const { login } = useUser();
+  const navigate = useNavigate();
 
   const indianStates = [
     'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -50,7 +52,6 @@ const Signup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess(false);
 
     if (!validateForm()) {
       return;
@@ -81,15 +82,14 @@ const Signup: React.FC = () => {
       const artistId = await FirestoreService.addArtist(artistData);
       console.log('Artist created with ID:', artistId);
       
-      setSuccess(true);
-      setFormData({
-        artistName: '',
-        state: '',
-        phoneNumber: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
-      });
+      // Create user object with ID
+      const userData = { ...artistData, id: artistId };
+      
+      // Store user in context and localStorage
+      login(userData);
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
       
     } catch (err) {
       console.error('Signup error:', err);
@@ -100,36 +100,6 @@ const Signup: React.FC = () => {
   };
 
 
-  if (success) {
-    return (
-      <main className="min-h-screen bg-[#121212] text-white">
-        <Navbar />
-        <div className="flex items-center justify-center min-h-screen pt-16">
-          <div className="max-w-md w-full mx-4">
-            <div className="bg-gray-800/50 backdrop-blur-md rounded-2xl p-8 border border-white/10 text-center">
-              <div className="mb-6">
-                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-green-400 mb-2">Account Created!</h2>
-                <p className="text-gray-300">
-                  Welcome to ShilpSetu! Your account has been created successfully.
-                </p>
-              </div>
-              <Link
-                to="/login"
-                className="inline-block bg-gradient-to-r from-orange-500 to-yellow-400 hover:from-orange-600 hover:to-yellow-500 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-              >
-                Sign In Now
-              </Link>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[#121212] text-white">

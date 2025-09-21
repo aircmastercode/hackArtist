@@ -1,9 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Navbar from './Navbar';
+import DashboardNavbar from './DashboardNavbar';
 import StoryHero from './StoryHero';
 import StickyImageSection from './StickyImageSection';
 import FullBleedImage from './FullBleedImage';
 import { StickyImageSectionData, FullBleedImageData } from '../data/storyData';
+import { useUser } from '../context/UserContext';
 
 interface IndividualArtistStoryProps {
   story: {
@@ -18,6 +21,7 @@ interface IndividualArtistStoryProps {
 }
 
 const IndividualArtistStory: React.FC<IndividualArtistStoryProps> = ({ story, artistName }) => {
+  const { isAuthenticated } = useUser();
   const renderSection = (section: StickyImageSectionData | FullBleedImageData, index: number) => {
     switch (section.type) {
       case 'sticky-image-section':
@@ -44,6 +48,9 @@ const IndividualArtistStory: React.FC<IndividualArtistStoryProps> = ({ story, ar
 
   return (
     <main className="bg-black text-white">
+      {/* Conditional Navbar */}
+      {isAuthenticated ? <DashboardNavbar /> : <Navbar />}
+      
       {/* Back to Gallery Button */}
       <div className="fixed top-20 left-4 z-40">
         <Link
