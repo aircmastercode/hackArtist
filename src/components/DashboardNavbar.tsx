@@ -37,14 +37,14 @@ const DashboardNavbar: React.FC = () => {
                 Stories
               </Link>
               <Link
-                to="/my-profile"
+                to="/explore"
                 className={`transition-colors duration-300 px-3 py-2 text-sm font-medium ${
-                  location.pathname === '/my-profile'
+                  location.pathname === '/explore'
                     ? 'text-yellow-400'
                     : 'text-white hover:text-yellow-400'
                 }`}
               >
-                My Profile
+                Explore
               </Link>
               <Link
                 to="/my-story"
@@ -75,16 +75,6 @@ const DashboardNavbar: React.FC = () => {
                 }`}
               >
                 Business Analytics
-              </Link>
-              <Link
-                to="/community"
-                className={`transition-colors duration-300 px-3 py-2 text-sm font-medium ${
-                  location.pathname === '/community'
-                    ? 'text-yellow-400'
-                    : 'text-white hover:text-yellow-400'
-                }`}
-              >
-                Community
               </Link>
             </div>
           </div>
