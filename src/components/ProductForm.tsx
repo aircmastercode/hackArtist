@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useUser } from '../context/UserContext';
 import { FirestoreService, Product } from '../services/firestore';
 import { AnalyticsService } from '../agents/services/analyticsService';
+import { ImageEnhancementService, ImageEnhancementResult } from '../services/imageEnhancementService';
 
 interface ProductFormProps {
   onProductAdded?: () => void;
@@ -23,6 +24,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
+  const [isEnhancingImages, setIsEnhancingImages] = useState(false);
+  const [enhancementResults, setEnhancementResults] = useState<ImageEnhancementResult[]>([]);
+  const [showEnhancementModal, setShowEnhancementModal] = useState(false);
+  const [enhancedImages, setEnhancedImages] = useState<string[]>([]);
 
   const categories = [
     'Pottery & Ceramics',
@@ -131,6 +136,68 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
   // Open file dialog
   const openFileDialog = () => {
     fileInputRef.current?.click();
+  };
+
+  // Enhance images using AI
+  const enhanceImages = async () => {
+    if (formData.rawImages.length === 0) {
+      setError('Please upload images first');
+      return;
+    }
+
+    if (!formData.productName.trim() || !formData.category) {
+      setError('Please fill in product name and category before enhancing images');
+      return;
+    }
+
+    setIsEnhancingImages(true);
+    setError('');
+
+    try {
+      console.log('🎨 Starting image enhancement...');
+      
+      const results = await ImageEnhancementService.enhanceMultipleImages(
+        formData.rawImages,
+        formData.productName,
+        formData.category
+      );
+
+      setEnhancementResults(results);
+      
+      // Check if any enhancements were successful
+      const successfulEnhancements = results.filter(r => r.success && r.enhancedImage);
+      
+      if (successfulEnhancements.length > 0) {
+        setEnhancedImages(successfulEnhancements.map(r => r.enhancedImage!));
+        setShowEnhancementModal(true);
+      } else {
+        const errorMessages = results.map(r => r.error).filter(Boolean);
+        setError(`Failed to enhance images: ${errorMessages.join(', ')}`);
+      }
+    } catch (err) {
+      console.error('Error enhancing images:', err);
+      setError(`Failed to enhance images: ${err instanceof Error ? err.message : 'Unknown error occurred'}`);
+    } finally {
+      setIsEnhancingImages(false);
+    }
+  };
+
+  // Accept enhanced images
+  const acceptEnhancedImages = () => {
+    setFormData(prev => ({
+      ...prev,
+      rawImages: enhancedImages
+    }));
+    setShowEnhancementModal(false);
+    setEnhancedImages([]);
+    setEnhancementResults([]);
+  };
+
+  // Reject enhanced images
+  const rejectEnhancedImages = () => {
+    setShowEnhancementModal(false);
+    setEnhancedImages([]);
+    setEnhancementResults([]);
   };
 
   const validateForm = () => {
@@ -244,6 +311,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-3"></div>
             <p className="text-blue-400 text-sm">
               Updating your business analysis with the new product...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isEnhancingImages && (
+        <div className="mb-6 p-4 bg-purple-500/20 border border-purple-500/50 rounded-lg">
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-400 mr-3"></div>
+            <p className="text-purple-400 text-sm">
+              Enhancing your images for professional presentation...
             </p>
           </div>
         </div>
@@ -389,6 +467,33 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
               </div>
             </div>
           )}
+
+          {/* Enhancement Button */}
+          {formData.rawImages.length > 0 && formData.productName.trim() && formData.category && (
+            <div className="mt-4 text-center space-y-2">
+              <button
+                type="button"
+                onClick={enhanceImages}
+                disabled={isEnhancingImages}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
+              >
+                {isEnhancingImages ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Enhancing Images...
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <span className="mr-2">✨</span>
+                    Enhance Images with AI
+                  </div>
+                )}
+              </button>
+              <p className="text-gray-400 text-xs mt-2">
+                AI will enhance your images for professional museum/studio presentation
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Artisan Notes */}
@@ -436,6 +541,83 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
           )}
         </div>
       </form>
+
+      {/* Enhancement Approval Modal */}
+      {showEnhancementModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-gray-800 rounded-2xl border border-white/10">
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  ✨ Enhanced Images Ready
+                </h3>
+                <p className="text-gray-300 mb-2">
+                  AI has enhanced your images for professional presentation. Compare and choose:
+                </p>
+                <p className="text-green-400 text-sm font-medium">
+                  ✅ All product details, colors, and features are preserved exactly as original
+                </p>
+              </div>
+
+              {/* Image Comparison Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {formData.rawImages.map((original, index) => {
+                  const enhanced = enhancedImages[index];
+                  if (!enhanced) return null;
+
+                  return (
+                    <div key={index} className="space-y-4">
+                      <h4 className="text-lg font-semibold text-white text-center">
+                        Image {index + 1}
+                      </h4>
+                      
+                      {/* Original Image */}
+                      <div className="relative">
+                        <h5 className="text-sm font-medium text-gray-400 mb-2">Original</h5>
+                        <img
+                          src={original}
+                          alt={`Original ${index + 1}`}
+                          className="w-full h-48 object-cover rounded-lg border border-gray-600"
+                        />
+                      </div>
+
+                      {/* Enhanced Image */}
+                      <div className="relative">
+                        <h5 className="text-sm font-medium text-purple-400 mb-2">Enhanced ✨</h5>
+                        <img
+                          src={enhanced}
+                          alt={`Enhanced ${index + 1}`}
+                          className="w-full h-48 object-cover rounded-lg border border-purple-500"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-4 justify-center">
+                <button
+                  onClick={acceptEnhancedImages}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105"
+                >
+                  ✅ Use Enhanced Images
+                </button>
+                <button
+                  onClick={rejectEnhancedImages}
+                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300"
+                >
+                  ❌ Keep Original Images
+                </button>
+              </div>
+
+              <p className="text-gray-400 text-sm text-center mt-4">
+                Enhanced images maintain all original product details while improving photography presentation for better online sales
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
