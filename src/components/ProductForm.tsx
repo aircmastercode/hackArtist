@@ -3,6 +3,7 @@ import { useUser } from '../context/UserContext';
 import { FirestoreService, Product } from '../services/firestore';
 import { AnalyticsService } from '../agents/services/analyticsService';
 import { ImageEnhancementService, ImageEnhancementResult } from '../services/imageEnhancementService';
+import { ImageCompression } from '../utils/imageCompression';
 
 interface ProductFormProps {
   onProductAdded?: () => void;
@@ -28,6 +29,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
   const [enhancementResults, setEnhancementResults] = useState<ImageEnhancementResult[]>([]);
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
   const [enhancedImages, setEnhancedImages] = useState<string[]>([]);
+  const [originalImages, setOriginalImages] = useState<string[]>([]);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
 
   const categories = [
     'Pottery & Ceramics',
@@ -140,13 +145,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
 
   // Enhance images using AI
   const enhanceImages = async () => {
+    console.log('🚀 Starting enhanceImages function...');
+    console.log('📊 Current state:', {
+      rawImagesCount: formData.rawImages.length,
+      productName: formData.productName,
+      category: formData.category,
+      artisanNotes: formData.artisanNotes
+    });
+
     if (formData.rawImages.length === 0) {
+      console.error('❌ No images to enhance');
       setError('Please upload images first');
       return;
     }
 
     if (!formData.productName.trim() || !formData.category) {
+      console.error('❌ Missing required fields');
       setError('Please fill in product name and category before enhancing images');
+      return;
+    }
+
+    if (!formData.artisanNotes.trim()) {
+      console.error('❌ Missing artisan notes');
+      setError('Please add artisan notes to provide context for better image enhancement');
       return;
     }
 
@@ -156,47 +177,139 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
     try {
       console.log('🎨 Starting image enhancement...');
       
+      // Test Gemini API connection first
+      console.log('🧪 Testing Gemini API connection...');
+      const apiWorking = await ImageEnhancementService.testGeminiConnection();
+      if (!apiWorking) {
+        throw new Error('Gemini API is not responding. Please check your internet connection and try again.');
+      }
+      console.log('✅ Gemini API is working');
+      
+      console.log('📤 Calling ImageEnhancementService.enhanceMultipleImages...');
+      
+      // Store original images for fallback
+      setOriginalImages([...formData.rawImages]);
+      
       const results = await ImageEnhancementService.enhanceMultipleImages(
         formData.rawImages,
         formData.productName,
-        formData.category
+        formData.category,
+        formData.artisanNotes
       );
 
+      console.log('📥 Enhancement results received:', results);
       setEnhancementResults(results);
       
       // Check if any enhancements were successful
       const successfulEnhancements = results.filter(r => r.success && r.enhancedImage);
+      console.log('✅ Successful enhancements:', successfulEnhancements.length);
+      console.log('❌ Failed enhancements:', results.length - successfulEnhancements.length);
       
       if (successfulEnhancements.length > 0) {
-        setEnhancedImages(successfulEnhancements.map(r => r.enhancedImage!));
+        const enhancedImagesList = successfulEnhancements.map(r => r.enhancedImage!);
+        console.log('🎯 Setting enhanced images:', enhancedImagesList.length);
+        setEnhancedImages(enhancedImagesList);
         setShowEnhancementModal(true);
+        console.log('✅ Enhancement modal should be visible now');
       } else {
         const errorMessages = results.map(r => r.error).filter(Boolean);
+        console.error('❌ All enhancements failed:', errorMessages);
         setError(`Failed to enhance images: ${errorMessages.join(', ')}`);
       }
     } catch (err) {
-      console.error('Error enhancing images:', err);
+      console.error('❌ Error in enhanceImages:', err);
       setError(`Failed to enhance images: ${err instanceof Error ? err.message : 'Unknown error occurred'}`);
     } finally {
       setIsEnhancingImages(false);
+      console.log('🏁 Enhancement process completed');
     }
   };
 
-  // Accept enhanced images
-  const acceptEnhancedImages = () => {
-    setFormData(prev => ({
-      ...prev,
-      rawImages: enhancedImages
-    }));
-    setShowEnhancementModal(false);
-    setEnhancedImages([]);
-    setEnhancementResults([]);
+  // Accept enhanced images and store them directly like original images
+  const acceptEnhancedImages = async () => {
+    console.log('🚀 Starting acceptEnhancedImages function...');
+    console.log('📊 Enhanced images state:', enhancedImages.length);
+    console.log('📊 Form data raw images:', formData.rawImages.length);
+    
+    setIsUploadingImages(true);
+    setError('');
+    setUploadProgress({ current: 0, total: enhancedImages.length });
+    
+    try {
+      console.log('📋 Checking enhanced images for Firestore storage...');
+      console.log('📊 Current formData.rawImages count:', formData.rawImages.length);
+      console.log('📊 Enhanced images count:', enhancedImages.length);
+      
+      // Check if enhanced images are too large for Firestore (like we do for original images)
+      const imageSizes = enhancedImages.map((image, index) => {
+        const base64Data = image.split(',')[1];
+        const sizeInKB = Math.round(base64Data.length * 0.75 / 1024);
+        const sizeInMB = sizeInKB / 1024;
+        const isTooLarge = sizeInMB > 0.8; // Firestore limit with buffer
+        
+        console.log(`📏 Enhanced image ${index + 1}: ${sizeInKB}KB (${sizeInMB.toFixed(2)}MB) ${isTooLarge ? '⚠️ TOO LARGE' : '✅ OK'}`);
+        
+        return { index, sizeInKB, sizeInMB, isTooLarge };
+      });
+      
+      const oversizedImages = imageSizes.filter(img => img.isTooLarge);
+      
+      let finalImages = enhancedImages;
+      
+      if (oversizedImages.length > 0) {
+        console.warn('⚠️ Some enhanced images are too large for Firestore, compressing them...');
+        
+        // Compress oversized images
+        const compressionResults = await ImageCompression.compressMultipleImages(
+          enhancedImages, 
+          0.6 // Aggressive compression for large images
+        );
+        
+        finalImages = compressionResults.map(result => result.compressed);
+        
+        console.log('✅ Enhanced images compressed successfully');
+      } else {
+        console.log(`✅ All ${enhancedImages.length} enhanced images are within Firestore size limits`);
+      }
+      
+      // Overwrite original images with enhanced images (compressed if needed) in the same positions
+      setFormData(prev => {
+        const newRawImages = [...prev.rawImages];
+        
+        // Replace original images with enhanced images at the same indices
+        finalImages.forEach((enhancedImage, index) => {
+          if (index < newRawImages.length) {
+            newRawImages[index] = enhancedImage;
+            console.log(`🔄 Replaced original image ${index + 1} with enhanced version`);
+          }
+        });
+        
+        return {
+          ...prev,
+          rawImages: newRawImages
+        };
+      });
+      
+      setUploadedImageUrls(enhancedImages);
+      setShowEnhancementModal(false);
+      setEnhancedImages([]);
+      setOriginalImages([]);
+      setEnhancementResults([]);
+      setUploadProgress({ current: 0, total: 0 });
+      
+    } catch (err) {
+      console.error('❌ Error processing enhanced images:', err);
+      setError(`Failed to process enhanced images: ${err instanceof Error ? err.message : 'Unknown error occurred'}`);
+    } finally {
+      setIsUploadingImages(false);
+    }
   };
 
   // Reject enhanced images
   const rejectEnhancedImages = () => {
     setShowEnhancementModal(false);
     setEnhancedImages([]);
+    setOriginalImages([]);
     setEnhancementResults([]);
   };
 
@@ -226,13 +339,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Starting form submission...');
+    console.log('📊 Form data before submission:', {
+      productName: formData.productName,
+      category: formData.category,
+      rawImagesCount: formData.rawImages.length,
+      artisanNotes: formData.artisanNotes,
+      price: formData.price
+    });
+    
     setError('');
 
     if (!validateForm()) {
+      console.error('❌ Form validation failed');
       return;
     }
 
     if (!user?.id) {
+      console.error('❌ No user ID found');
       setError('User not found. Please log in again.');
       return;
     }
@@ -240,10 +364,69 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
     setIsLoading(true);
 
     try {
+      // Validate images before saving
+      const validImages = formData.rawImages.filter(url => {
+        if (!url.trim()) return false;
+        // Check if it's a valid URL (either data URL or Firebase Storage URL)
+        if (!url.startsWith('data:image/') && !url.startsWith('https://')) {
+          console.error('Invalid image format:', url.substring(0, 50) + '...');
+          return false;
+        }
+        return true;
+      });
+
+      if (validImages.length === 0) {
+        setError('No valid images found. Please upload images again.');
+        return;
+      }
+
+      // Log image details for debugging
+      const imageDetails = validImages.map((url, index) => {
+        if (url.startsWith('data:image/')) {
+          const base64Data = url.split(',')[1];
+          const sizeInKB = Math.round(base64Data.length * 0.75 / 1024);
+          const sizeInMB = sizeInKB / 1024;
+          const isTooLarge = sizeInMB > 0.8; // Firestore limit with buffer
+          return { 
+            index, 
+            type: 'base64', 
+            size: `${sizeInKB}KB (${sizeInMB.toFixed(2)}MB)`,
+            tooLarge: isTooLarge
+          };
+        } else if (url.startsWith('https://')) {
+          return { index, type: 'firebase-storage', size: 'URL' };
+        }
+        return { index, type: 'unknown', size: 'unknown' };
+      });
+
+      // Check for oversized images
+      const oversizedImages = imageDetails.filter(img => img.tooLarge);
+      if (oversizedImages.length > 0) {
+        console.warn('⚠️ Some images are too large for Firestore:', oversizedImages);
+        setError(`Some images are too large for storage (${oversizedImages.length} images over 0.8MB). Please use smaller images.`);
+        return;
+      }
+
+      console.log('📦 Preparing product data for Firestore:', {
+        productName: formData.productName.trim(),
+        category: formData.category,
+        imageCount: validImages.length,
+        price: Number(formData.price),
+        artistId: user.id,
+        imageDetails,
+        rawImagesPreview: validImages.map((img, i) => ({
+          index: i,
+          type: img.startsWith('data:image/') ? 'base64' : 'url',
+          size: img.startsWith('data:image/') ? 
+            `${Math.round(img.split(',')[1].length * 0.75 / 1024)}KB` : 'URL',
+          preview: img.substring(0, 50) + '...'
+        }))
+      });
+
       const productData: Omit<Product, 'id'> = {
         productName: formData.productName.trim(),
         category: formData.category,
-        rawImages: formData.rawImages.filter(url => url.trim()),
+        rawImages: validImages,
         artisanNotes: formData.artisanNotes.trim(),
         price: Number(formData.price),
         artistId: user.id,
@@ -252,7 +435,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
         isActive: true
       };
 
-      await FirestoreService.addProduct(productData);
+      console.log('💾 Saving product to database...');
+      const productId = await FirestoreService.addProduct(productData);
+      console.log('✅ Product saved successfully with ID:', productId);
+      
+      // Test: Verify what was actually saved to the database
+      console.log('🔍 Testing database content...');
+      try {
+        const savedProduct = await FirestoreService.getProductById(productId);
+        if (savedProduct) {
+          console.log('📊 Database verification:', {
+            productId: savedProduct.id,
+            imageCount: savedProduct.rawImages.length,
+            imageSizes: savedProduct.rawImages.map((img, i) => ({
+              index: i,
+              size: img.startsWith('data:image/') ? 
+                `${Math.round(img.split(',')[1].length * 0.75 / 1024)}KB` : 'URL',
+              preview: img.substring(0, 50) + '...'
+            }))
+          });
+        }
+      } catch (testError) {
+        console.warn('⚠️ Could not verify database content:', testError);
+      }
       
       // Reset form
       setFormData({
@@ -262,6 +467,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
         artisanNotes: '',
         price: ''
       });
+      setEnhancedImages([]);
+      setOriginalImages([]);
+      setEnhancementResults([]);
+      setUploadedImageUrls([]);
 
       // Trigger fresh analysis in the background
       setIsGeneratingAnalysis(true);
@@ -281,8 +490,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
       }
       
     } catch (err) {
-      console.error('Error adding product:', err);
-      setError('Failed to add product. Please try again.');
+      console.error('❌ Error adding product:', err);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to add product. Please try again.';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('Failed to add product')) {
+          errorMessage = 'Database error: Unable to save product. Please check your connection and try again.';
+        } else if (err.message.includes('permission')) {
+          errorMessage = 'Permission denied. Please make sure you are logged in.';
+        } else if (err.message.includes('network')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        } else {
+          errorMessage = `Error: ${err.message}`;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -469,7 +694,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
           )}
 
           {/* Enhancement Button */}
-          {formData.rawImages.length > 0 && formData.productName.trim() && formData.category && (
+          {formData.rawImages.length > 0 && formData.productName.trim() && formData.category && formData.artisanNotes.trim() && (
             <div className="mt-4 text-center space-y-2">
               <button
                 type="button"
@@ -557,6 +782,30 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
                 <p className="text-green-400 text-sm font-medium">
                   ✅ All product details, colors, and features are preserved exactly as original
                 </p>
+                
+                {/* Upload Progress Bar */}
+                {isUploadingImages && (
+                  <div className="mt-4 p-4 bg-gray-700/50 rounded-lg">
+                    <div className="flex items-center justify-center mb-2">
+                      <span className="animate-spin inline-block w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full mr-2"></span>
+                      <span className="text-green-400 font-medium">
+                        {uploadProgress.total > 0 ? (
+                          `Processing ${uploadProgress.current}/${uploadProgress.total} images...`
+                        ) : (
+                          'Processing & Compressing Images...'
+                        )}
+                      </span>
+                    </div>
+                    {uploadProgress.total > 0 && (
+                      <div className="w-full bg-gray-600 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                        ></div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Image Comparison Grid */}
@@ -599,9 +848,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
               <div className="flex space-x-4 justify-center">
                 <button
                   onClick={acceptEnhancedImages}
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105"
+                  disabled={isUploadingImages}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-500 disabled:to-gray-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
                 >
-                  ✅ Use Enhanced Images
+                  {isUploadingImages ? (
+                    <>
+                      <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+                      {uploadProgress.total > 0 ? (
+                        `Processing ${uploadProgress.current}/${uploadProgress.total} images...`
+                      ) : (
+                        'Processing & Compressing Images...'
+                      )}
+                    </>
+                  ) : (
+                    '✅ Use Enhanced Images'
+                  )}
                 </button>
                 <button
                   onClick={rejectEnhancedImages}

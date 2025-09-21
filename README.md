@@ -24,12 +24,34 @@ An interactive React homepage featuring a spotlight cursor effect and user-choic
 npm install
 ```
 
-2. Start the development server:
+### Environment Setup
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Firebase Configuration
+REACT_APP_FIREBASE_API_KEY=your_firebase_api_key_here
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Gemini AI Configuration
+REACT_APP_GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+**Important**: Replace the placeholder values with your actual API keys and configuration values.
+
+### Running the Application
+
+1. Start the development server:
 ```bash
 npm start
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+2. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## How It Works
 

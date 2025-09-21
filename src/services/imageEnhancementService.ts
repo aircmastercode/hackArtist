@@ -8,11 +8,61 @@ export interface ImageEnhancementResult {
 
 export class ImageEnhancementService {
   /**
+   * Test if Gemini API is working
+   */
+  static async testGeminiConnection(): Promise<boolean> {
+    try {
+      console.log('🧪 Testing Gemini API connection...');
+      const testPrompt = [
+        { text: 'Hello, can you respond with "API working"?' }
+      ];
+      
+      const result = await model.generateContent(testPrompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      console.log('✅ Gemini API test response:', text);
+      return text.includes('API working') || text.length > 0;
+    } catch (error) {
+      console.error('❌ Gemini API test failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate context-aware enhancement prompt based on product details
+   */
+  private static generateEnhancementPrompt(productName: string, category: string, artisanNotes?: string): string {
+    // Base preservation instruction
+    let prompt = `CRITICAL: Preserve the EXACT product appearance - no changes to colors, textures, patterns, size, or physical characteristics. Only enhance the PHOTOGRAPHY PRESENTATION.`;
+
+    // Get category-specific settings
+    const settings = this.getEnhancementSettings(category);
+
+    // Build the enhancement prompt
+    prompt += `\n\nPRODUCT CONTEXT:
+- Product: ${productName}
+- Category: ${category}
+${artisanNotes ? `- Artisan Notes: ${artisanNotes}` : ''}
+
+ENHANCEMENT REQUIREMENTS:
+- Background: ${settings.background}
+- Lighting: ${settings.lighting}
+- Setting: ${settings.setting}
+- Maintain product authenticity while improving presentation quality
+- Ensure the product remains the clear focal point
+- Apply professional photography standards while preserving handmade character`;
+
+    return prompt;
+  }
+
+  /**
    * Enhance a product image for museum/studio presentation
    */
-  static async enhanceProductImage(imageDataUrl: string, productName: string, category: string): Promise<ImageEnhancementResult> {
+  static async enhanceProductImage(imageDataUrl: string, productName: string, category: string, artisanNotes?: string): Promise<ImageEnhancementResult> {
     try {
       console.log('🎨 Starting image enhancement for:', productName);
+      console.log('📋 Enhancement context:', { category, artisanNotes: artisanNotes ? 'Provided' : 'Not provided' });
       
       // Extract base64 data from data URL
       const base64Data = imageDataUrl.split(',')[1];
@@ -20,10 +70,13 @@ export class ImageEnhancementService {
         throw new Error('Invalid image data URL');
       }
 
-      // Create enhancement prompt based on product details
+      // Generate context-aware enhancement prompt
+      const enhancementText = this.generateEnhancementPrompt(productName, category, artisanNotes);
+      console.log('🎯 Applied enhancement settings for category:', category);
+      
       const enhancementPrompt = [
         { 
-          text: `IMPORTANT: This is a product image for e-commerce. You must preserve ALL product details exactly as they are - no changes to the actual product, colors, textures, patterns, size, or any physical characteristics. Only improve the PHOTOGRAPHY PRESENTATION: Adjust lighting to be more professional and even. Improve the background to be clean and neutral. Enhance the overall image quality and sharpness. Make the product look more appealing for online sales while keeping the product itself 100% identical to the original. Do not change, add, or remove any product features, colors, or details.` 
+          text: enhancementText
         },
         {
           inlineData: {
@@ -52,7 +105,16 @@ export class ImageEnhancementService {
         if (part.inlineData) {
           console.log('✅ Image enhancement completed successfully');
           const enhancedBase64 = part.inlineData.data;
+          
+          // Validate the base64 data
+          if (!enhancedBase64 || enhancedBase64.length === 0) {
+            throw new Error('Enhanced image data is empty');
+          }
+          
           const enhancedDataUrl = `data:image/png;base64,${enhancedBase64}`;
+          
+          // Log image size for debugging
+          console.log('📏 Enhanced image size:', Math.round(enhancedBase64.length * 0.75 / 1024), 'KB');
           
           return {
             success: true,
@@ -77,7 +139,8 @@ export class ImageEnhancementService {
   static async enhanceMultipleImages(
     images: string[], 
     productName: string, 
-    category: string
+    category: string,
+    artisanNotes?: string
   ): Promise<ImageEnhancementResult[]> {
     try {
       console.log(`🎨 Enhancing ${images.length} images for:`, productName);
@@ -87,7 +150,7 @@ export class ImageEnhancementService {
       
       for (let i = 0; i < images.length; i++) {
         console.log(`📤 Enhancing image ${i + 1}/${images.length}...`);
-        const result = await this.enhanceProductImage(images[i], productName, category);
+        const result = await this.enhanceProductImage(images[i], productName, category, artisanNotes);
         results.push(result);
         
         // Add small delay between requests to be respectful to the API
@@ -105,6 +168,66 @@ export class ImageEnhancementService {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       }));
     }
+  }
+
+  /**
+   * Get enhancement settings for a specific category (for debugging/preview)
+   */
+  static getEnhancementSettings(category: string) {
+    const categorySettings = {
+      'Pottery & Ceramics': {
+        background: 'clean, neutral studio background with soft lighting, possibly on a wooden table or stone surface',
+        lighting: 'soft, even lighting that highlights the ceramic texture and glaze',
+        setting: 'minimalist studio setting that complements the handmade nature'
+      },
+      'Textiles & Weaving': {
+        background: 'neutral fabric backdrop or clean surface that doesn\'t compete with the textile patterns',
+        lighting: 'even, diffused lighting to show fabric texture and weave details',
+        setting: 'simple presentation that allows the textile work to be the focus'
+      },
+      'Jewelry & Accessories': {
+        background: 'elegant, neutral background or subtle texture that complements the jewelry',
+        lighting: 'professional lighting that highlights metal work and gemstones',
+        setting: 'sophisticated presentation suitable for luxury items'
+      },
+      'Woodwork & Carving': {
+        background: 'natural wood surface or neutral background that complements the wood grain',
+        lighting: 'warm lighting that enhances wood texture and carving details',
+        setting: 'craftsman studio atmosphere that emphasizes the woodworking skill'
+      },
+      'Metalwork': {
+        background: 'industrial or neutral background that highlights the metal work',
+        lighting: 'dramatic lighting that shows metal texture and craftsmanship',
+        setting: 'professional presentation that emphasizes the metalworking artistry'
+      },
+      'Painting & Art': {
+        background: 'gallery-style neutral background or subtle texture',
+        lighting: 'museum-quality lighting that shows true colors and brushwork',
+        setting: 'art gallery presentation that respects the artistic work'
+      },
+      'Basketry': {
+        background: 'natural, earthy background that complements the woven materials',
+        lighting: 'soft, natural lighting that shows weaving patterns and texture',
+        setting: 'organic presentation that emphasizes the natural materials'
+      },
+      'Leatherwork': {
+        background: 'neutral background that doesn\'t compete with leather texture',
+        lighting: 'warm lighting that highlights leather grain and stitching',
+        setting: 'craftsman presentation that shows leatherworking expertise'
+      },
+      'Glasswork': {
+        background: 'clean, neutral background that allows glass transparency to show',
+        lighting: 'careful lighting that shows glass clarity and any color variations',
+        setting: 'minimalist presentation that emphasizes the glass artistry'
+      },
+      'Other': {
+        background: 'clean, professional neutral background',
+        lighting: 'even, professional lighting',
+        setting: 'simple, elegant presentation'
+      }
+    };
+
+    return categorySettings[category as keyof typeof categorySettings] || categorySettings['Other'];
   }
 
   /**

@@ -16,7 +16,7 @@ const SystemTest: React.FC = () => {
     try {
       console.log('🧪 Testing Gemini API...');
       
-      const GEMINI_API_KEY = 'AIzaSyBOWg8ZzA8Cw1_YcmZW3BRfzGyKxHvevOE';
+      const GEMINI_API_KEY = '';
       const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
