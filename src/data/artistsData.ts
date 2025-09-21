@@ -22,13 +22,13 @@ export const artists: Artist[] = [
       hero: {
         title: "The Art of Terracotta Pottery",
         subtitle: "A 40-Year Journey with Clay",
-        imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop&crop=center",
+        imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
       },
       sections: [
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Ramesh Kumar working with clay on his pottery wheel.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for Ramesh Kumar story.',
           textBlocks: [
             { 
               type: 'text', 
@@ -44,13 +44,13 @@ export const artists: Artist[] = [
         },
         {
           type: 'full-bleed-image',
-          imageUrl: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'A collection of beautifully crafted terracotta pots.'
+          imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background section.'
         },
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Traditional pottery tools and materials.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for story conclusion.',
           textBlocks: [
             { 
               type: 'text', 
@@ -73,13 +73,13 @@ export const artists: Artist[] = [
       hero: {
         title: "The Royal Art of Blue Pottery",
         subtitle: "Preserving Jaipur's Heritage",
-        imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop&crop=center",
+        imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
       },
       sections: [
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Priya Sharma painting intricate blue pottery designs.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for Priya Sharma story.',
           textBlocks: [
             { 
               type: 'text', 
@@ -95,13 +95,13 @@ export const artists: Artist[] = [
         },
         {
           type: 'full-bleed-image',
-          imageUrl: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'A collection of blue pottery pieces with intricate designs.'
+          imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background section.'
         },
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Traditional blue pottery painting tools.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for story conclusion.',
           textBlocks: [
             { 
               type: 'text', 
@@ -124,13 +124,13 @@ export const artists: Artist[] = [
       hero: {
         title: "The Threads of Kutch",
         subtitle: "Weaving Stories Through Embroidery",
-        imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop&crop=center",
+        imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
       },
       sections: [
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Arjun Patel working on intricate Kutch embroidery.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for Arjun Patel story.',
           textBlocks: [
             { 
               type: 'text', 
@@ -146,13 +146,13 @@ export const artists: Artist[] = [
         },
         {
           type: 'full-bleed-image',
-          imageUrl: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Beautiful Kutch embroidery work with vibrant colors.'
+          imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background section.'
         },
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Traditional embroidery tools and colorful threads.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for story conclusion.',
           textBlocks: [
             { 
               type: 'text', 
@@ -175,13 +175,13 @@ export const artists: Artist[] = [
       hero: {
         title: "The Stitches of Love",
         subtitle: "Preserving Family Legacy Through Kantha",
-        imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop&crop=center",
+        imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
       },
       sections: [
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Lakshmi Devi working on traditional Kantha embroidery.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for Lakshmi Devi story.',
           textBlocks: [
             { 
               type: 'text', 
@@ -197,13 +197,13 @@ export const artists: Artist[] = [
         },
         {
           type: 'full-bleed-image',
-          imageUrl: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Beautiful Kantha embroidery work with intricate patterns.'
+          imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background section.'
         },
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Traditional Kantha embroidery materials and tools.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for story conclusion.',
           textBlocks: [
             { 
               type: 'text', 
@@ -226,13 +226,13 @@ export const artists: Artist[] = [
       hero: {
         title: "The Divine Art of Tanjore",
         subtitle: "Painting Gods with Gold and Devotion",
-        imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop&crop=center",
+        imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
       },
       sections: [
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Suresh Iyer working on a Tanjore painting with gold leaf.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for Suresh Iyer story.',
           textBlocks: [
             { 
               type: 'text', 
@@ -248,13 +248,13 @@ export const artists: Artist[] = [
         },
         {
           type: 'full-bleed-image',
-          imageUrl: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'A beautiful Tanjore painting with gold leaf details.'
+          imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background section.'
         },
         {
           type: 'sticky-image-section',
-          backgroundUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
-          alt: 'Traditional Tanjore painting tools and materials.',
+          backgroundUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect width='1920' height='1080' fill='%23000000'/%3E%3C/svg%3E",
+          alt: 'Black background for story conclusion.',
           textBlocks: [
             { 
               type: 'text', 

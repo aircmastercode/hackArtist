@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
           {/* Login/Signup Button */}
           <div className="flex-shrink-0">
             <button className="bg-gradient-to-r from-red-600 to-orange-500 hover:brightness-110 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl">
-              Login / Signup
+              Login
             </button>
           </div>
 
