@@ -47,11 +47,22 @@ export interface Product {
   isActive: boolean;
 }
 
+// Business Analysis interface
+export interface BusinessAnalysis {
+  id?: string;
+  artistId: string; // Reference to the artist
+  analysisData: any; // The complete analytics data
+  lastUpdated: string; // When this analysis was last generated
+  productCount: number; // Number of products when analysis was generated
+  isActive: boolean;
+}
+
 // Firestore service functions
 export class FirestoreService {
   private static readonly USERS_COLLECTION = 'users';
   private static readonly ARTIST_PROFILES_COLLECTION = 'artistProfiles';
   private static readonly PRODUCTS_COLLECTION = 'products';
+  private static readonly BUSINESS_ANALYSIS_COLLECTION = 'businessAnalysis';
 
   // Add a new artist to Firestore
   static async addArtist(artistData: Omit<Artist, 'id'>): Promise<string> {
@@ -341,6 +352,84 @@ export class FirestoreService {
     } catch (error) {
       console.error('Error getting product by ID: ', error);
       throw new Error('Failed to retrieve product');
+    }
+  }
+
+  // Business Analysis methods
+
+  // Save or update business analysis
+  static async saveBusinessAnalysis(analysisData: Omit<BusinessAnalysis, 'id'>): Promise<string> {
+    try {
+      // Check if analysis already exists for this artist
+      const existingAnalysis = await this.getBusinessAnalysisByArtistId(analysisData.artistId);
+      
+      if (existingAnalysis) {
+        // Update existing analysis
+        const docRef = doc(db, this.BUSINESS_ANALYSIS_COLLECTION, existingAnalysis.id!);
+        await updateDoc(docRef, {
+          analysisData: analysisData.analysisData,
+          lastUpdated: analysisData.lastUpdated,
+          productCount: analysisData.productCount,
+          isActive: true
+        });
+        return existingAnalysis.id!;
+      } else {
+        // Create new analysis
+        const docRef = await addDoc(collection(db, this.BUSINESS_ANALYSIS_COLLECTION), {
+          ...analysisData,
+          isActive: true
+        });
+        return docRef.id;
+      }
+    } catch (error) {
+      console.error('Error saving business analysis: ', error);
+      throw new Error('Failed to save business analysis');
+    }
+  }
+
+  // Get business analysis by artist ID
+  static async getBusinessAnalysisByArtistId(artistId: string): Promise<BusinessAnalysis | null> {
+    try {
+      const q = query(
+        collection(db, this.BUSINESS_ANALYSIS_COLLECTION),
+        where('artistId', '==', artistId),
+        where('isActive', '==', true)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return null;
+      }
+
+      const doc = querySnapshot.docs[0];
+      return {
+        id: doc.id,
+        ...doc.data()
+      } as BusinessAnalysis;
+    } catch (error) {
+      console.error('Error getting business analysis: ', error);
+      throw new Error('Failed to retrieve business analysis');
+    }
+  }
+
+  // Check if analysis needs to be updated (based on product count)
+  static async shouldUpdateAnalysis(artistId: string): Promise<boolean> {
+    try {
+      const [analysis, products] = await Promise.all([
+        this.getBusinessAnalysisByArtistId(artistId),
+        this.getProductsByArtist(artistId)
+      ]);
+
+      if (!analysis) {
+        return true; // No analysis exists, need to create one
+      }
+
+      // Check if product count has changed
+      return analysis.productCount !== products.length;
+    } catch (error) {
+      console.error('Error checking if analysis should update: ', error);
+      return true; // If error, assume we need to update
     }
   }
 }

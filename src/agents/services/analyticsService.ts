@@ -1,4 +1,4 @@
-import { FirestoreService, Product } from '../../services/firestore';
+import { FirestoreService, Product, BusinessAnalysis } from '../../services/firestore';
 import AIAnalysisTool, { 
   PriceAnalysis, 
   FestivalOffer, 
@@ -24,11 +24,37 @@ export interface AnalyticsData {
 
 export class AnalyticsService {
   /**
-   * Get comprehensive analytics for an artist
+   * Get comprehensive analytics for an artist (with caching)
    */
   static async getArtistAnalytics(artistId: string): Promise<AnalyticsData> {
     try {
       console.log('🔍 Starting analytics for artist:', artistId);
+      
+      // Check if we need to update the analysis
+      const shouldUpdate = await FirestoreService.shouldUpdateAnalysis(artistId);
+      
+      if (!shouldUpdate) {
+        console.log('📋 Using cached analysis data');
+        const cachedAnalysis = await FirestoreService.getBusinessAnalysisByArtistId(artistId);
+        if (cachedAnalysis) {
+          return cachedAnalysis.analysisData;
+        }
+      }
+
+      console.log('🔄 Generating fresh analysis data...');
+      return await this.generateFreshAnalysis(artistId);
+    } catch (error) {
+      console.error('❌ Analytics service error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate fresh analysis data and cache it
+   */
+  static async generateFreshAnalysis(artistId: string): Promise<AnalyticsData> {
+    try {
+      console.log('🔄 Generating fresh analysis for artist:', artistId);
       
       // Fetch artist data
       const [products, artistProfile] = await Promise.all([
@@ -91,9 +117,7 @@ export class AnalyticsService {
       console.log('📋 Starting sales report...');
       const salesReport = await AIAnalysisTool.generateSalesReport(products, artistProfile);
 
-      console.log('✅ All analytics completed successfully');
-
-      return {
+      const analysisData: AnalyticsData = {
         priceAnalysis,
         festivalOffers,
         marketAnalysis,
@@ -103,8 +127,36 @@ export class AnalyticsService {
         productIdeas,
         salesReport
       };
+
+      console.log('✅ All analytics completed successfully');
+
+      // Cache the analysis data
+      console.log('💾 Caching analysis data...');
+      await FirestoreService.saveBusinessAnalysis({
+        artistId,
+        analysisData,
+        lastUpdated: new Date().toISOString(),
+        productCount: products.length,
+        isActive: true
+      });
+
+      console.log('✅ Analysis data cached successfully');
+      return analysisData;
     } catch (error) {
-      console.error('❌ Analytics service error:', error);
+      console.error('❌ Fresh analysis generation error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Trigger fresh analysis (used when new products are added)
+   */
+  static async triggerFreshAnalysis(artistId: string): Promise<AnalyticsData> {
+    try {
+      console.log('🚀 Triggering fresh analysis for artist:', artistId);
+      return await this.generateFreshAnalysis(artistId);
+    } catch (error) {
+      console.error('❌ Error triggering fresh analysis:', error);
       throw error;
     }
   }
@@ -113,14 +165,8 @@ export class AnalyticsService {
    * Get price analysis only
    */
   static async getPriceAnalysis(artistId: string): Promise<PriceAnalysis> {
-    const products = await FirestoreService.getProductsByArtist(artistId);
-    const artist = await FirestoreService.getArtistById(artistId);
-    
-    if (!artist) {
-      throw new Error('Artist not found');
-    }
-
-    return AIAnalysisTool.analyzePricing(products, artist.state);
+    const data = await this.getArtistAnalytics(artistId);
+    return data.priceAnalysis;
   }
 
   /**

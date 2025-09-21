@@ -12,6 +12,7 @@ import MyStory from './pages/MyStory';
 import BusinessAnalysis from './pages/BusinessAnalysis';
 import SystemTest from './pages/SystemTest';
 import AnalyticsTest from './pages/AnalyticsTest';
+import CachingTest from './pages/CachingTest';
 import PopulateStories from './pages/PopulateStories';
 import DatabaseArtistStory from './components/DatabaseArtistStory';
 import { artists } from './data/artistsData';
@@ -35,6 +36,7 @@ const App: React.FC = () => {
           <Route path="/populate-stories" element={<PopulateStories />} />
           <Route path="/system-test" element={<SystemTest />} />
           <Route path="/analytics-test" element={<AnalyticsTest />} />
+          <Route path="/caching-test" element={<CachingTest />} />
           {/* Individual Artist Story Routes */}
           {artists.map((artist) => (
             <Route

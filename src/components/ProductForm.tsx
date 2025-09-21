@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useUser } from '../context/UserContext';
 import { FirestoreService, Product } from '../services/firestore';
+import { AnalyticsService } from '../agents/services/analyticsService';
 
 interface ProductFormProps {
   onProductAdded?: () => void;
@@ -21,6 +22,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
   const [error, setError] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
 
   const categories = [
     'Pottery & Ceramics',
@@ -194,6 +196,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
         price: ''
       });
 
+      // Trigger fresh analysis in the background
+      setIsGeneratingAnalysis(true);
+      try {
+        console.log('🚀 Triggering fresh analysis after product addition...');
+        await AnalyticsService.triggerFreshAnalysis(user.id);
+        console.log('✅ Analysis updated successfully');
+      } catch (analysisError) {
+        console.error('⚠️ Failed to update analysis:', analysisError);
+        // Don't show error to user as this is background process
+      } finally {
+        setIsGeneratingAnalysis(false);
+      }
+
       if (onProductAdded) {
         onProductAdded();
       }
@@ -220,6 +235,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ onProductAdded, onCancel }) =
       {error && (
         <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
           <p className="text-red-400 text-sm">{error}</p>
+        </div>
+      )}
+
+      {isGeneratingAnalysis && (
+        <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-3"></div>
+            <p className="text-blue-400 text-sm">
+              Updating your business analysis with the new product...
+            </p>
+          </div>
         </div>
       )}
 
