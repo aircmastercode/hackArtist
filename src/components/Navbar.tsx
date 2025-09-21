@@ -25,13 +25,7 @@ const Navbar: React.FC = () => {
                 href="/our-story"
                 className="text-white hover:text-yellow-400 transition-colors duration-300 px-3 py-2 text-sm font-medium"
               >
-                Our Story
-              </a>
-              <a
-                href="/for-buyers"
-                className="text-white hover:text-yellow-400 transition-colors duration-300 px-3 py-2 text-sm font-medium"
-              >
-                For Buyers
+                Stories
               </a>
             </div>
           </div>

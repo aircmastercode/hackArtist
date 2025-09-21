@@ -37,13 +37,6 @@ const FeaturedArtistsSection: React.FC = () => {
       location: "Tamil Nadu",
       bio: "With gold leaf and vibrant colors, I bring ancient stories to life on canvas, one painting at a time.",
       image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face"
-    },
-    {
-      name: "Meera Nair",
-      craft: "Kathakali Mask Maker",
-      location: "Kerala",
-      bio: "Each mask I carve tells a story from our rich mythology, preserving our cultural heritage for future generations.",
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face"
     }
   ];
 
@@ -55,12 +48,12 @@ const FeaturedArtistsSection: React.FC = () => {
             Meet Our Master Artisans
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Discover the incredible stories and craftsmanship of our featured artists, each bringing decades of tradition and passion to their work.
+            Meet our master artisans, each bringing decades of tradition and passion to their craft. These exceptional artists represent the heart of Indian craftsmanship.
           </p>
         </div>
 
         {/* Artist Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
           {featuredArtists.map((artist, index) => (
             <ArtistCard
               key={index}
